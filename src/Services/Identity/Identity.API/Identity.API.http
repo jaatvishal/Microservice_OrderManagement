@@ -1,0 +1,28 @@
+@Identity.API_HostAddress = http://localhost:5101
+
+### Register a customer. Replace the sample values locally. Do not commit real passwords.
+POST {{Identity.API_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "password": "ChangeMe1",
+  "firstName": "Ava",
+  "lastName": "Customer"
+}
+
+###
+POST {{Identity.API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "password": "ChangeMe1"
+}
+
+###
+GET {{Identity.API_HostAddress}}/api/auth/me
+Authorization: Bearer {{accessToken}}
+
+###
+GET {{Identity.API_HostAddress}}/health/live

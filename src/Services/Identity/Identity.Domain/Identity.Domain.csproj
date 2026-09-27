@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Identity.Domain</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Identity.Application" />
+    <InternalsVisibleTo Include="Identity.Infrastructure" />
+    <InternalsVisibleTo Include="Identity.UnitTests" />
+  </ItemGroup>
+
+</Project>

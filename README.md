@@ -67,8 +67,8 @@ ECommerce.OrderManagement/
 │   │   ├── BuildingBlocks.Contracts/       # Event contracts and DTOs (Zero-dependency)
 │   │   ├── BuildingBlocks.Application/     # Result monad, common abstractions (Clock, Tracing)
 │   │   └── BuildingBlocks.Infrastructure/  # Concrete providers (DateTimeProvider, CorrelationContext)
-│   ├── Services/                           # Autonomous Microservices (Added in upcoming phases)
-│   │   ├── Identity/
+│   ├── Services/
+│   │   ├── Identity/                       # Phase 2: accounts, JWT, refresh tokens, IdentityDb
 │   │   ├── Product/
 │   │   ├── Cart/
 │   │   ├── Order/
@@ -93,28 +93,40 @@ ECommerce.OrderManagement/
 
 ---
 
-## 🚀 Getting Started (Phase 1)
+## Getting started
 
 ### Prerequisites
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- SQL Server or Azure SQL for the Identity database (local Docker Compose arrives in a later phase)
 - Git
 
-### Build & Run Tests
+### Build and test
 ```bash
-# Clone the repository
-git clone <repo-url>
-cd Microservice_OrderManagement
-
-# Build the entire solution
 dotnet build
-
-# Run unit tests
 dotnet test
 ```
 
+### Run the Identity service
+Secrets are not in source control. Set them in the shell, then start the API. See [`.env.example`](.env.example).
+
+```powershell
+$env:ConnectionStrings__IdentityDb = "Server=localhost,1433;Database=IdentityDb;User Id=sa;Password=<strong-password>;TrustServerCertificate=True"
+$env:Jwt__SigningKey = "<random value of at least 32 characters>"
+$env:Database__ApplyMigrations = "true"
+dotnet run --project src/Services/Identity/Identity.API
+```
+
+Swagger: `http://localhost:5101/swagger`
+
+Live health (does not touch the database): `http://localhost:5101/health/live`  
+Readiness (checks IdentityDb): `http://localhost:5101/health/ready`
+
+The design of registration, tokens, and `IdentityDb` is in [`docs/architecture/identity-service.md`](docs/architecture/identity-service.md).
+
 ---
 
-## 📑 Architecture Decision Records (ADR)
+## Architecture Decision Records
 - [ADR-001: Database per Microservice](docs/decisions/ADR-001-database-per-microservice.md)
 - [ADR-002: Synchronous REST vs Asynchronous Messaging](docs/decisions/ADR-002-sync-rest-vs-async-messaging.md)
 - [ADR-003: Shared BuildingBlocks Discipline vs Distributed Coupling](docs/decisions/ADR-003-building-blocks-discipline.md)
+- [ADR-004: Identity tokens and password hashing](docs/decisions/ADR-004-identity-tokens.md)

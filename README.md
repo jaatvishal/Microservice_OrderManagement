@@ -69,7 +69,7 @@ ECommerce.OrderManagement/
 │   │   └── BuildingBlocks.Infrastructure/  # Concrete providers (DateTimeProvider, CorrelationContext)
 │   ├── Services/
 │   │   ├── Identity/                       # Phase 2: accounts, JWT, refresh tokens, IdentityDb
-│   │   ├── Product/
+│   │   ├── Product/                        # Phase 3: catalog, ProductDb, no stock counts
 │   │   ├── Cart/
 │   │   ├── Order/
 │   │   ├── Inventory/
@@ -97,7 +97,7 @@ ECommerce.OrderManagement/
 
 ### Prerequisites
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- SQL Server or Azure SQL for the Identity database (local Docker Compose arrives in a later phase)
+- SQL Server or Azure SQL. Identity and Product each use their own database. Docker Compose arrives in a later phase.
 - Git
 
 ### Build and test
@@ -123,6 +123,21 @@ Readiness (checks IdentityDb): `http://localhost:5101/health/ready`
 
 The design of registration, tokens, and `IdentityDb` is in [`docs/architecture/identity-service.md`](docs/architecture/identity-service.md).
 
+### Run the Product service
+Use the same `Jwt__SigningKey`, issuer, and audience as Identity. Point the process at `ProductDb`, not `IdentityDb`.
+
+```powershell
+$env:ConnectionStrings__ProductDb = "Server=localhost,1433;Database=ProductDb;User Id=sa;Password=<strong-password>;TrustServerCertificate=True"
+$env:Jwt__SigningKey = "<the same key Identity uses>"
+$env:Database__ApplyMigrations = "true"
+$env:Database__SeedSampleCatalog = "true"
+dotnet run --project src/Services/Product/Product.API
+```
+
+Swagger: `http://localhost:5102/swagger`
+
+Catalog reads are anonymous. Creating or changing a product requires an Identity access token with the Admin role. The catalog does not store stock. That boundary is explained in [`docs/architecture/product-service.md`](docs/architecture/product-service.md).
+
 ---
 
 ## Architecture Decision Records
@@ -130,3 +145,4 @@ The design of registration, tokens, and `IdentityDb` is in [`docs/architecture/i
 - [ADR-002: Synchronous REST vs Asynchronous Messaging](docs/decisions/ADR-002-sync-rest-vs-async-messaging.md)
 - [ADR-003: Shared BuildingBlocks Discipline vs Distributed Coupling](docs/decisions/ADR-003-building-blocks-discipline.md)
 - [ADR-004: Identity tokens and password hashing](docs/decisions/ADR-004-identity-tokens.md)
+- [ADR-005: Catalog data versus inventory](docs/decisions/ADR-005-catalog-versus-inventory.md)
